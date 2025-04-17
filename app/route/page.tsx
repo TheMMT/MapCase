@@ -35,11 +35,6 @@ const RouteMap = dynamic(() => import('./RouteMap'), {
   )
 })
 
-interface RouteMapProps {
-  locations: ExtendedLocation[];
-  userLocation: { lat: number; lng: number } | null;
-  isLoadingUserLocation: boolean;
-}
 
 interface ExtendedLocation extends LocationType {
   isSelected?: boolean;
