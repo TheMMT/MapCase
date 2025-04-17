@@ -1,0 +1,37 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+.yarn/
+
+# testing
+coverage
+.nyc_output
+
+# next.js
+.next
+out
+
+# git
+.git
+.github
+
+# env files
+.env*
+!.env.example
+
+# docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+.docker-volumes
+.docker-data
+
+# misc
+.DS_Store
+*.pem
+.vscode
+.idea
+README.md
+.editorconfig
+*.log 
