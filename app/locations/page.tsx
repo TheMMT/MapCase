@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { 
   Box, 
   Button, 
@@ -10,24 +10,15 @@ import {
   ListItem, 
   HStack, 
   Text, 
-  VStack,
   IconButton,
   Flex,
   Collapse
 } from '@chakra-ui/react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useLocationStore } from '@/store/useStore'
 
-interface Location {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  color: string;
-}
 
-// Özel ikonlar
 const ChevronRightIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -41,19 +32,11 @@ const MapIcon = () => (
 )
 
 export default function LocationsList() {
-  const [locations, setLocations] = useState<Location[]>([])
-  const [expandedLocationId, setExpandedLocationId] = useState<number | null>(null)
+  const [expandedLocationId, setExpandedLocationId] = useState<string | null>(null)
+  const locations = useLocationStore(state => state.locations)
   const router = useRouter()
 
-  useEffect(() => {
-    // Client tarafında çalıştığından emin ol
-    if (typeof window !== 'undefined') {
-      const savedLocations = JSON.parse(localStorage.getItem('locations') || '[]')
-      setLocations(savedLocations)
-    }
-  }, [])
-
-  const toggleLocationExpand = (id: number) => {
+  const toggleLocationExpand = (id: string) => {
     if (expandedLocationId === id) {
       setExpandedLocationId(null)
     } else {
@@ -61,7 +44,7 @@ export default function LocationsList() {
     }
   }
 
-  const handleEditLocation = (id: number) => {
+  const handleEditLocation = (id: string) => {
     router.push(`/locations/edit/${id}`)
   }
 
@@ -95,7 +78,6 @@ export default function LocationsList() {
             >
               <Flex justify="space-between" align="center">
                 <HStack spacing={4} flex="1" onClick={() => toggleLocationExpand(location.id)} cursor="pointer">
-                  {/* Marker ikonu */}
                   <Box position="relative" width="25px" height="41px">
                     <div 
                       style={{
@@ -139,8 +121,9 @@ export default function LocationsList() {
   )
 }
 
-// Map.tsx'den alınan renk dönüşüm fonksiyonu
-function getHueRotate(hexColor: string): number {
+function getHueRotate(hexColor: string | undefined): number {
+  if (!hexColor) return 0;
+  
   const r = parseInt(hexColor.slice(1, 3), 16) / 255;
   const g = parseInt(hexColor.slice(3, 5), 16) / 255;
   const b = parseInt(hexColor.slice(5, 7), 16) / 255;

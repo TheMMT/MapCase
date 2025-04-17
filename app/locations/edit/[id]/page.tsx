@@ -15,14 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { useRouter, useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
-
-interface Location {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  color: string;
-}
+import { useLocationStore, Location } from '@/store/useStore'
 
 const MapWithNoSSR = dynamic(() => import('../../../components/Map'), {
   ssr: false,
@@ -38,29 +31,32 @@ export default function EditLocation() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
+  
+  const locations = useLocationStore(state => state.locations)
+  const updateLocation = useLocationStore(state => state.updateLocation)
+  const deleteLocation = useLocationStore(state => state.deleteLocation)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const locations = JSON.parse(localStorage.getItem('locations') || '[]')
-      const foundLocation = locations.find((loc: Location) => loc.id === parseInt(id))
-      
-      if (foundLocation) {
-        setLocation(foundLocation)
-        setLocationName(foundLocation.name)
-        setPosition({ lat: foundLocation.lat, lng: foundLocation.lng })
+    const foundLocation = locations.find(loc => loc.id === id)
+    
+    if (foundLocation) {
+      setLocation(foundLocation)
+      setLocationName(foundLocation.name)
+      setPosition({ lat: foundLocation.lat, lng: foundLocation.lng })
+      if (foundLocation.color) {
         setMarkerColor(foundLocation.color)
-      } else {
-        toast({
-          title: 'Hata',
-          description: 'Konum bulunamadı',
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        })
-        router.push('/locations')
       }
+    } else {
+      toast({
+        title: 'Hata',
+        description: 'Konum bulunamadı',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+      router.push('/locations')
     }
-  }, [id, router, toast])
+  }, [id, router, toast, locations])
 
   const handleUpdateLocation = () => {
     if (!locationName) {
@@ -74,38 +70,31 @@ export default function EditLocation() {
       return
     }
 
-    const locations = JSON.parse(localStorage.getItem('locations') || '[]')
-    const updatedLocations = locations.map((loc: Location) => {
-      if (loc.id === parseInt(id)) {
-        return {
-          ...loc,
-          name: locationName,
-          lat: position.lat,
-          lng: position.lng,
-          color: markerColor
-        }
+    if (location) {
+      const updatedLocation: Location = {
+        ...location,
+        name: locationName,
+        lat: position.lat,
+        lng: position.lng,
+        color: markerColor
       }
-      return loc
-    })
-    
-    localStorage.setItem('locations', JSON.stringify(updatedLocations))
-    
-    toast({
-      title: 'Başarılı',
-      description: 'Konum başarıyla güncellendi',
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    })
-    
-    router.push('/locations')
+      
+      updateLocation(updatedLocation)
+      
+      toast({
+        title: 'Başarılı',
+        description: 'Konum başarıyla güncellendi',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      })
+      
+      router.push('/locations')
+    }
   }
 
   const handleDeleteLocation = () => {
-    const locations = JSON.parse(localStorage.getItem('locations') || '[]')
-    const filteredLocations = locations.filter((loc: Location) => loc.id !== parseInt(id))
-    
-    localStorage.setItem('locations', JSON.stringify(filteredLocations))
+    deleteLocation(id)
     
     toast({
       title: 'Başarılı',

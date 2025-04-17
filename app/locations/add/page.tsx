@@ -16,6 +16,7 @@ import {
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import dynamic from 'next/dynamic'
+import { useLocationStore } from '@/store/useStore'
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: '/marker-icon-2x.png',
@@ -31,6 +32,7 @@ export default function AddLocation() {
   const [position, setPosition] = useState({ lat: 41.015137, lng: 28.979530 })
   const [locationName, setLocationName] = useState('')
   const [markerColor, setMarkerColor] = useState('#FF5733')
+  const addLocation = useLocationStore(state => state.addLocation)
   const toast = useToast()
 
   const handleSaveLocation = () => {
@@ -45,17 +47,15 @@ export default function AddLocation() {
       return
     }
 
-    const locations = JSON.parse(localStorage.getItem('locations') || '[]')
     const newLocation = {
-      id: Date.now(),
+      id: Date.now().toString(),
       name: locationName,
       lat: position.lat,
       lng: position.lng,
       color: markerColor
     }
     
-    locations.push(newLocation)
-    localStorage.setItem('locations', JSON.stringify(locations))
+    addLocation(newLocation)
     
     toast({
       title: 'Başarılı',

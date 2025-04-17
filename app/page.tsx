@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Button, Container, Heading, HStack } from "@chakra-ui/react"
+import { Button, Container, Heading, HStack } from "@chakra-ui/react"
 import Link from "next/link"
 
 export default function Home() {
