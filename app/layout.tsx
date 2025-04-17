@@ -20,15 +20,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+    <html lang="tr">
+      <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      </head>
+      <body>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
