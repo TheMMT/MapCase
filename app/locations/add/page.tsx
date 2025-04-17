@@ -29,7 +29,6 @@ export default function AddLocation() {
   const toast = useToast()
 
   useEffect(() => {
-    // Leaflet konfigürasyonu client tarafında yapılmalı
     import('leaflet').then((L) => {
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: '/marker-icon-2x.png',

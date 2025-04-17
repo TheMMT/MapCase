@@ -2,15 +2,15 @@
 
 import { useEffect, useRef } from 'react'
 import { Box, Spinner, Text } from '@chakra-ui/react'
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Circle } from 'react-leaflet'
+import { MapContainer, TileLayer, Polyline } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Location as LocationType } from '@/store/useStore'
-
-interface ExtendedLocation extends LocationType {
-  isSelected?: boolean;
-  distance?: number;
-}
+import { ExtendedLocation } from '@/app/types/location'
+import { MapUpdater } from '@/app/components/map-modules/MapUpdater'
+import { UserLocationMarker } from '@/app/components/map-modules/UserLocationMarker'
+import { LocationMarkers } from '@/app/components/map-modules/LocationMarkers'
+import { getFullRoute, polylineOptions } from '@/app/utils/mapUtils'
+import { getHueRotate } from '@/app/utils/colorUtils'
 
 interface RouteMapProps {
   locations: ExtendedLocation[];
@@ -18,69 +18,9 @@ interface RouteMapProps {
   isLoadingUserLocation: boolean;
 }
 
-function MapUpdater({ 
-  locations, 
-  userLocation 
-}: { 
-  locations: ExtendedLocation[];
-  userLocation: { lat: number; lng: number } | null;
-}) {
-  const map = useMap()
-  
-  useEffect(() => {
-    if (locations.length === 0 && !userLocation) return;
-    
-    const bounds = new L.LatLngBounds([]);
-    
-    if (userLocation) {
-      bounds.extend([userLocation.lat, userLocation.lng]);
-    }
-    
-    locations.forEach(location => {
-      bounds.extend([location.lat, location.lng]);
-    });
-    
-    if (bounds.getNorthEast().lat !== bounds.getSouthWest().lat || 
-        bounds.getNorthEast().lng !== bounds.getSouthWest().lng) {
-      map.fitBounds(bounds, { padding: [30, 30] });
-    }
-  }, [locations, userLocation, map]);
-  
-  return null;
-}
-
 export default function RouteMap({ locations, userLocation, isLoadingUserLocation }: RouteMapProps) {
   const defaultCenter = { lat: 41.015137, lng: 28.979530 };
   const mapRef = useRef<L.Map | null>(null);
-  
-  const userCircleStyle = {
-    color: '#4285F4',
-    fillColor: '#4285F4',
-    fillOpacity: 0.5,
-    weight: 2
-  };
-  
-  const polylineOptions = {
-    color: '#3388ff',
-    weight: 4,
-    opacity: 0.7,
-    smoothFactor: 1
-  };
-  
-  const createCustomIcon = (color: string | undefined) => {
-    if (!color) color = '#FF5733'; 
-    
-    return new L.Icon({
-      iconUrl: '/marker-icon.png',
-      iconRetinaUrl: '/marker-icon-2x.png',
-      shadowUrl: '/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41],
-      className: `custom-icon-${color.slice(1)}`,
-    });
-  };
   
   useEffect(() => {
     const style = document.createElement('style');
@@ -125,14 +65,6 @@ export default function RouteMap({ locations, userLocation, isLoadingUserLocatio
     }
   }, []);
   
-  const routePoints = locations.map(loc => [loc.lat, loc.lng] as [number, number]);
-  
-  const getFullRoute = () => {
-    if (!userLocation || locations.length === 0) return routePoints;
-    
-    return [[userLocation.lat, userLocation.lng], ...routePoints] as [number, number][];
-  };
-  
   return (
     <Box position="relative" height="100%" width="100%">
       {isLoadingUserLocation && (
@@ -172,47 +104,12 @@ export default function RouteMap({ locations, userLocation, isLoadingUserLocatio
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {userLocation && (
-          <>
-            <Circle 
-              center={[userLocation.lat, userLocation.lng]} 
-              radius={50} 
-              pathOptions={userCircleStyle}
-            />
-            <Marker 
-              position={[userLocation.lat, userLocation.lng]} 
-              icon={new L.DivIcon({
-                html: '<div style="background-color: #4285F4; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>',
-                className: 'user-location-marker',
-                iconSize: [16, 16],
-                iconAnchor: [8, 8],
-              })}
-            >
-              <Popup>
-                <Text fontWeight="bold">Mevcut Konumunuz</Text>
-              </Popup>
-            </Marker>
-          </>
-        )}
+        {userLocation && <UserLocationMarker userLocation={userLocation} />}
         
-        {locations.map((location) => (
-          <Marker 
-            key={location.id} 
-            position={[location.lat, location.lng]} 
-            icon={createCustomIcon(location.color)}
-          >
-            <Popup>
-              <Box>
-                <Text fontWeight="bold">{location.name}</Text>
-                <Text fontSize="sm">Enlem: {location.lat.toFixed(6)}</Text>
-                <Text fontSize="sm">Boylam: {location.lng.toFixed(6)}</Text>
-              </Box>
-            </Popup>
-          </Marker>
-        ))}
+        <LocationMarkers locations={locations} />
         
         {locations.length > 0 && (
-          <Polyline positions={getFullRoute()} {...polylineOptions} />
+          <Polyline positions={getFullRoute(locations, userLocation)} {...polylineOptions} />
         )}
         
         <MapUpdater 
@@ -222,32 +119,4 @@ export default function RouteMap({ locations, userLocation, isLoadingUserLocatio
       </MapContainer>
     </Box>
   )
-}
-
-function getHueRotate(hexColor: string | undefined): number {
-  if (!hexColor) return 0;
-  
-  const r = parseInt(hexColor.slice(1, 3), 16) / 255;
-  const g = parseInt(hexColor.slice(3, 5), 16) / 255;
-  const b = parseInt(hexColor.slice(5, 7), 16) / 255;
-  
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  
-  let h = 0;
-  
-  if (max !== min) {
-    if (max === r) {
-      h = 60 * ((g - b) / (max - min));
-      if (g < b) h += 360;
-    } else if (max === g) {
-      h = 60 * ((b - r) / (max - min)) + 120;
-    } else {
-      h = 60 * ((r - g) / (max - min)) + 240;
-    }
-  }
-  
-  const blueMarkerHue = 240;
-  
-  return h - blueMarkerHue;
 } 
