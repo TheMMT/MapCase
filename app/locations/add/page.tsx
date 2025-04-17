@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { 
   Box, 
   Button, 
@@ -11,22 +11,18 @@ import {
   Input, 
   Text, 
   VStack, 
-  HStack,
   useToast
 } from '@chakra-ui/react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import dynamic from 'next/dynamic'
 
-// Leaflet icon düzeltmesi
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: '/marker-icon-2x.png',
   iconUrl: '/marker-icon.png',
   shadowUrl: '/marker-shadow.png',
 })
 
-// Harita bileşenini sunucu tarafında render etmeyi engellemek için
 const MapWithNoSSR = dynamic(() => import('../../components/Map'), {
   ssr: false,
 })

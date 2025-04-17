@@ -1,17 +1,20 @@
 "use client"
 
-import { Box, Button, Container, Heading } from "@chakra-ui/react"
+import { Box, Button, Container, Heading, HStack } from "@chakra-ui/react"
 import Link from "next/link"
 
 export default function Home() {
   return (
     <Container maxW="container.xl" py={5}>
       <Heading mb={5}>MapCase</Heading>
-      <Box>
+      <HStack spacing={4}>
         <Link href="/locations/add" passHref>
           <Button colorScheme="blue">Konum Ekle</Button>
         </Link>
-      </Box>
+        <Link href="/locations" passHref>
+          <Button colorScheme="green">Konumları Listele</Button>
+        </Link>
+      </HStack>
     </Container>
   )
 }

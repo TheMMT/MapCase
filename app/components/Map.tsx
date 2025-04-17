@@ -23,7 +23,6 @@ function MapClickHandler({ setPosition }: { setPosition: (position: { lat: numbe
 }
 
 export default function Map({ position, setPosition, markerColor }: MapProps) {
-  // Özel renkli marker oluştur
   const customIcon = new L.Icon({
     iconUrl: '/marker-icon.png',
     iconRetinaUrl: '/marker-icon-2x.png',
@@ -36,7 +35,6 @@ export default function Map({ position, setPosition, markerColor }: MapProps) {
   })
 
   useEffect(() => {
-    // CSS ile marker rengini değiştir
     const style = document.createElement('style')
     style.innerHTML = `
       .custom-icon {
@@ -66,11 +64,28 @@ export default function Map({ position, setPosition, markerColor }: MapProps) {
   )
 }
 
-// RGB renk değerini hue rotate değerine dönüştür
 function getHueRotate(hexColor: string): number {
-  // Basit bir dönüşüm - gerçek projede daha karmaşık bir hesaplama gerekebilir
-  const r = parseInt(hexColor.slice(1, 3), 16)
-  const g = parseInt(hexColor.slice(3, 5), 16)
-  const b = parseInt(hexColor.slice(5, 7), 16)
-  return Math.floor((r + g + b) / 3) % 360
+  const r = parseInt(hexColor.slice(1, 3), 16) / 255;
+  const g = parseInt(hexColor.slice(3, 5), 16) / 255;
+  const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  
+  let h = 0;
+  
+  if (max !== min) {
+    if (max === r) {
+      h = 60 * ((g - b) / (max - min));
+      if (g < b) h += 360;
+    } else if (max === g) {
+      h = 60 * ((b - r) / (max - min)) + 120;
+    } else {
+      h = 60 * ((r - g) / (max - min)) + 240;
+    }
+  }
+  
+  const blueMarkerHue = 240;
+  
+  return h - blueMarkerHue;
 } 
