@@ -60,6 +60,7 @@ export default function RoutePage() {
     const timeoutId = setTimeout(handleResize, 1000)
 
     return () => clearTimeout(timeoutId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeLocations])
 
   const getUserLocation = () => {

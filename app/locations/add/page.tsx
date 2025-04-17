@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Box, 
   Button, 
@@ -14,15 +14,8 @@ import {
   useToast
 } from '@chakra-ui/react'
 import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
 import dynamic from 'next/dynamic'
 import { useLocationStore } from '@/store/useStore'
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: '/marker-icon-2x.png',
-  iconUrl: '/marker-icon.png',
-  shadowUrl: '/marker-shadow.png',
-})
 
 const MapWithNoSSR = dynamic(() => import('../../components/Map'), {
   ssr: false,
@@ -34,6 +27,17 @@ export default function AddLocation() {
   const [markerColor, setMarkerColor] = useState('#FF5733')
   const addLocation = useLocationStore(state => state.addLocation)
   const toast = useToast()
+
+  useEffect(() => {
+    // Leaflet konfigürasyonu client tarafında yapılmalı
+    import('leaflet').then((L) => {
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: '/marker-icon-2x.png',
+        iconUrl: '/marker-icon.png',
+        shadowUrl: '/marker-shadow.png',
+      })
+    })
+  }, [])
 
   const handleSaveLocation = () => {
     if (!locationName) {
